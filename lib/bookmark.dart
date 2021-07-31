@@ -1,14 +1,31 @@
 import 'dart:typed_data';
-
+import 'bookmarked.dart' as bookmarked;
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_ibm_watson/flutter_ibm_watson.dart';
 
 import 'main.dart';
 
-class Bookmark extends StatelessWidget {
-  final List<Word> bookmarked;
-  Bookmark({Key key, this.bookmarked}) : super(key: key);
+class Bookmark extends StatefulWidget {
+  const Bookmark({Key key}) : super(key: key);
+
+  @override
+  _BookmarkState createState() => _BookmarkState();
+}
+
+class _BookmarkState extends State<Bookmark> {
+  showSnackBar(String text, Color color) {
+    final snackBar = SnackBar(
+      backgroundColor: color,
+      content: Text(text),
+      action: SnackBarAction(
+        label: 'Dismiss',
+        textColor: Colors.black,
+        onPressed: () {},
+      ),
+    );
+    return snackBar;
+  }
 
   void textToSpeech(String text) async {
     AudioPlayer audioPlayer = new AudioPlayer();
@@ -25,48 +42,76 @@ class Bookmark extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (bookmarked == null) {
+    if (bookmarked.bookmarks == null || bookmarked.bookmarks.length == 0) {
       return Scaffold(
           appBar: AppBar(
             title: Text("Bookmarks"),
           ),
-          body: Center(child: Text("No bookmarked chuchu yet")));
+          body: Center(child: Text("No bookmarked.bookmarks word yet")));
     } else
       return Scaffold(
         appBar: AppBar(
           title: Text("Bookmarks"),
         ),
         body: ListView.builder(
-          itemCount: bookmarked.length,
+          itemCount: bookmarked.bookmarks.length,
           itemBuilder: (BuildContext context, int index) {
-            return ListBody(
-              children: [
-                Container(
-                  color: Colors.grey[300],
-                  child: ListTile(
-                    trailing: ElevatedButton(
-                      child: Icon(Icons.speaker),
-                      onPressed: () {
-                        textToSpeech(bookmarked[index].definition);
-                      },
+            return Card(
+              child: ListBody(
+                children: [
+                  Container(
+                    color: Colors.grey[300],
+                    child: ListTile(
+                      trailing: GestureDetector(
+                          onTap: () {
+                            Word data = Word();
+                            data.imageUrl =
+                                bookmarked.bookmarks[index].imageUrl;
+                            data.name = bookmarked.bookmarks[index].name;
+                            data.type = bookmarked.bookmarks[index].type;
+                            data.definition =
+                                bookmarked.bookmarks[index].definition;
+                            String name = data.name;
+                            setState(() {
+                              bookmarked.bookmarks.removeWhere(
+                                  (item) => item.definition == data.definition);
+                            });
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                showSnackBar(
+                                    "Bookmark for \"$name\" has been removed!",
+                                    Colors.blue));
+                          },
+                          child: Icon(
+                            Icons.bookmark_remove,
+                            color: Colors.red,
+                          )),
+                      leading: bookmarked.bookmarks[index].imageUrl == null
+                          ? null
+                          : CircleAvatar(
+                              backgroundImage: NetworkImage(
+                                  bookmarked.bookmarks[index].imageUrl),
+                            ),
+                      title: Row(
+                        children: [
+                          Text(bookmarked.bookmarks[index].name +
+                              "(" +
+                              bookmarked.bookmarks[index].type +
+                              ")"),
+                          GestureDetector(
+                              onTap: () {
+                                textToSpeech(bookmarked.bookmarks[index].name);
+                              },
+                              child: Icon(Icons.multitrack_audio)),
+                        ],
+                      ),
                     ),
-                    leading: bookmarked[index].imageUrl == null
-                        ? null
-                        : CircleAvatar(
-                            backgroundImage:
-                                NetworkImage(bookmarked[index].imageUrl),
-                          ),
-                    title: Text(bookmarked[index].name +
-                        "(" +
-                        bookmarked[index].type +
-                        ")"),
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(bookmarked[index].definition),
-                )
-              ],
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(bookmarked.bookmarks[index].definition),
+                  )
+                ],
+              ),
             );
           },
         ),
