@@ -192,85 +192,94 @@ class _MyHomePageState extends State<MyHomePage> {
                 child: CircularProgressIndicator(),
               );
             }
-
-            // output
-            return ListView.builder(
-              itemCount: snapshot.data["definitions"].length,
-              itemBuilder: (BuildContext context, int index) {
-                return Card(
-                  child: ListBody(
-                    children: [
-                      Container(
-                        color: Colors.grey[300],
-                        child: ListTile(
-                          trailing: GestureDetector(
-                              onTap: () {
-                                Word data = Word();
-                                data.imageUrl = snapshot.data["definitions"]
-                                    [index]["image_url"];
-                                data.name = textEditingController.text.trim();
-                                data.type =
-                                    snapshot.data["definitions"][index]["type"];
-                                data.definition = snapshot.data["definitions"]
-                                    [index]["definition"];
-                                String name = data.name;
-                                bool found = false;
-                                bookmarked.bookmarks.forEach((element) {
-                                  if (element.definition == data.definition)
-                                    found = true;
-                                });
-                                if (found) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                      showSnackBar(
-                                          "\"$name\" already bookmarked",
-                                          Colors.orange));
-                                } else {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                      showSnackBar(
-                                          "Bookmarked!", Colors.green));
-                                  setState(() {
-                                    bookmarked.bookmarks.add(data);
+            try {
+              return ListView.builder(
+                itemCount: snapshot.data["definitions"].length is int
+                    ? snapshot.data["definitions"].length
+                    : 0,
+                itemBuilder: (BuildContext context, int index) {
+                  return Card(
+                    child: ListBody(
+                      children: [
+                        Container(
+                          color: Colors.grey[300],
+                          child: ListTile(
+                            trailing: GestureDetector(
+                                onTap: () {
+                                  Word data = Word();
+                                  data.imageUrl = snapshot.data["definitions"]
+                                      [index]["image_url"];
+                                  data.name = textEditingController.text.trim();
+                                  data.type = snapshot.data["definitions"]
+                                      [index]["type"];
+                                  data.definition = snapshot.data["definitions"]
+                                      [index]["definition"];
+                                  String name = data.name;
+                                  bool found = false;
+                                  bookmarked.bookmarks.forEach((element) {
+                                    if (element.definition == data.definition)
+                                      found = true;
                                   });
-                                }
-                              },
-                              child: Icon(
-                                Icons.bookmark,
-                                color: Colors.green,
-                              )),
-                          leading: snapshot.data["definitions"][index]
-                                      ["image_url"] ==
-                                  null
-                              ? null
-                              : CircleAvatar(
-                                  backgroundImage: NetworkImage(snapshot
-                                      .data["definitions"][index]["image_url"]),
-                                ),
-                          title: Row(
-                            children: [
-                              Text(textEditingController.text.trim() +
-                                  "(" +
-                                  snapshot.data["definitions"][index]["type"] +
-                                  ")"),
-                              GestureDetector(
-                                  onTap: () {
-                                    definition =
-                                        textEditingController.text.trim();
-                                    textToSpeech(definition);
-                                  },
-                                  child: Icon(Icons.multitrack_audio)),
-                            ],
+                                  if (found) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                        showSnackBar(
+                                            "\"$name\" already bookmarked",
+                                            Colors.orange));
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                        showSnackBar(
+                                            "Bookmarked!", Colors.green));
+                                    setState(() {
+                                      bookmarked.bookmarks.add(data);
+                                    });
+                                  }
+                                },
+                                child: Icon(
+                                  Icons.bookmark,
+                                  color: Colors.green,
+                                )),
+                            leading: snapshot.data["definitions"][index]
+                                        ["image_url"] ==
+                                    null
+                                ? null
+                                : CircleAvatar(
+                                    backgroundImage: NetworkImage(
+                                        snapshot.data["definitions"][index]
+                                            ["image_url"]),
+                                  ),
+                            title: Row(
+                              children: [
+                                Text(textEditingController.text.trim() +
+                                    "(" +
+                                    snapshot.data["definitions"][index]
+                                        ["type"] +
+                                    ")"),
+                                GestureDetector(
+                                    onTap: () {
+                                      definition =
+                                          textEditingController.text.trim();
+                                      textToSpeech(definition);
+                                    },
+                                    child: Icon(Icons.multitrack_audio)),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(
-                            snapshot.data["definitions"][index]["definition"]),
-                      ),
-                    ],
-                  ),
-                );
-              },
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(snapshot.data["definitions"][index]
+                              ["definition"]),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              );
+            } catch (e) {
+              print(e);
+            }
+            return Center(
+              child: Text("Word not found"),
             );
           },
           stream: _stream,
